@@ -111,7 +111,7 @@ class pyChicken:
 
       pass
 
-    def _load_facts_file(self, facts_file)
+    def _load_facts_file(self, facts_file):
       """ Takes a CSV fie in the format:
       <fact_type>,<fact_content>,<fact_author>
       and loads it into the database for use when sending out tweets.
