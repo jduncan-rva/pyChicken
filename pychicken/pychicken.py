@@ -32,9 +32,6 @@ class pyChicken:
     self.chicken_facts = list()
     self.chicken_facts_count = len(self.chicken_facts)
 
-    self.pir = MotionSensor(self.motion_sensor_pin)
-    self.pir.when_motion = self._motion_sensor
-
   def _set_timestamp(self):
     """ We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
     """
@@ -129,11 +126,16 @@ class pyChicken:
     def _motion_sensor(self):
       """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
       """
-      
-      "motion detected at {t}!".format(t=datetime.now())
 
+      def tasks():
+        "motion detected at {t}!".format(t=datetime.now())
+
+      pir = MotionSensor(self.motion_sensor_pin)
+      pir.when_motion = tasks
+      
     def run(self, options):
       """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
       """
 
+      self._motion_sensor
       pause()
