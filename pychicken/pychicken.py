@@ -117,7 +117,7 @@ class pyChicken:
     and loads it into the database for use when sending out tweets.
     """
 
-  def _add_tweet_quote(self, quote, fact_type=fact, author=None):
+  def _add_tweet_quote(self, quote, fact_type='fact', author=None):
     """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
     """
 
