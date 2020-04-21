@@ -9,12 +9,13 @@ from picamera import PiCamera
 
 motion_sensor_pin = 14
 
-class PyChicken:
+class pyChicken:
   """Python3 application for Raspberry Pis to take advantage of an onboard camera and a PIR motion sensor to automate backyard foul social media
   """
 
   def __init__(self, motion_sensor_pin = motion_sensor_pin):
     self.timestamp = self._set_timestamp()
+    self.tweet = True
     self.tweet_interval = (60 * 60) # max 1 tweet per hour
     self.camera = PiCamera()
     self.camera.resolution = (1024, 768)
@@ -25,13 +26,17 @@ class PyChicken:
       self.image_filename
     )
     self.running_livestream = False
+    self.livestreams = False
     self.motion_sensor_pin = motion_sensor_pin
 
     self.chicken_facts = list()
     self.chicken_facts_count = len(self.chicken_facts)
 
+    self.pir = MotionSensor(self.motion_sensor_pin)
+    self.pir.when_motion = self._motion_sensor()
+
   def _set_timestamp(self):
-    """We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
+    """ We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
     """
     
     self.timestamp = datetime.now()
@@ -39,7 +44,7 @@ class PyChicken:
     return True
     
   def _check_timestamp(self):
-    """Check to see if it's OK to send out a tweet or if we should wait. Uses self.timestamp_interval as the minimum wait between events
+    """ Checks to see if it's OK to send out a tweet or if we should wait. Uses self.timestamp_interval as the minimum wait between events
     """
 
     curr_time = datetime.now()
@@ -54,7 +59,7 @@ class PyChicken:
       return False
 
   def _image_capture(self):
-    """capture a still image and save it to a file for uplaoding to a tweet
+    """ Captures a still image and save it to a file for uplaoding to a tweet
     """
     
     # we don't want to try to capture a pic if we're running a livestream
@@ -65,7 +70,7 @@ class PyChicken:
       self.camera.capture(self.twitter_image)
 
     def _send_tweet(self, message, attach_pic=True):
-      """takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
+      """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
       """
       if self.running_livestream:
         message = self.livestream_message
@@ -75,7 +80,7 @@ class PyChicken:
       pass
 
     def _get_tweet_fact(self):
-      """grabs a random fact about chickens to attach to a tweet that is being sent out
+      """ Grabs a random fact about chickens to attach to a tweet that is being sent out
       """
       fact_number = randrange(self.chicken_facts_count)
       fact = self.chicken_facts(fact_number)
@@ -85,13 +90,17 @@ class PyChicken:
       fact_author = fact[2]
 
       if fact_type == "fact":
-        message = "Chicken fact %s: %s" % (fact_number, fact_content)
+        message = "Chicken fact %s: %s source: %s" % (fact_number, 
+        fact_content,
+        fact_author)
 
       if fact_type == "quote":
-        message = "Chicken Quote %s: %s --%s" % (fact_number, fact_content, fact_author)
+        message = "Chicken Quote %s: %s --%s" % (fact_number, 
+        fact_content, 
+        fact_author)
 
     def _run_livestream(self):
-      """starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
+      """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
       """
 
       self.running_livestream = True
@@ -102,11 +111,29 @@ class PyChicken:
 
       pass
 
+    def _load_facts_file(self, facts_file)
+      """ Takes a CSV fie in the format:
+      <fact_type>,<fact_content>,<fact_author>
+      and loads it into the database for use when sending out tweets.
+      """
+
     def _add_tweet_quote(self, fact_type=fact, author=None, quote):
-      """used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
+      """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
       """
 
       self.chicken_facts.append((fact_type, quote, author))
       self.chicken_facts_count = len(self.chicken_facts)
 
       return True
+
+    def _motion_sensor(self):
+      """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
+      """
+
+      print "motion detected at %s!" % datetime.now()
+
+    def run(self, options):
+      """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
+      """
+
+      pause()

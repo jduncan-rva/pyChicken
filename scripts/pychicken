@@ -1,0 +1,32 @@
+#! /usr/bin/python3
+
+# This app uses the pyChicken Python module to run a small social media
+# platform on a Raspberry Pi with a PIR motion detector and infrared camera
+
+from optparse import OptionParser
+import os
+import sys
+from pychicken import pyChicken
+
+def main():
+  parser = OptionParser()
+  parser.add_option("-f", "--facts", dest="facts_file",
+                    help="CSV file of facts to include", metavar="FILE")
+  parser.add_option("-l", "--livestreams",
+                    action="store_true", dest="livestreams", default=False,
+                    dest="livestreams"
+                    help="if set, enables youtube live livestreams. requires youtube credentials in the config file", metavar="LIVESTREAM")
+  parser.add_option("-c", "--config", dest="config_file",
+                    help="Config file. Default is ~/.pychicken.conf", metavar="CONFIG_FILE")
+  parser.add_option("-t", "--tweet", action="store_true", default=True,
+                    dest="tweet",
+                    help="defaults to True, whether or not to send out Twitter content. Requires config in ~/.pychicken.conf", 
+                    metavar="TWEET")
+
+  (options, args) = parser.parse_args()
+
+  pychicken = pyChickent(options)
+  pychicken.run()
+
+if __name__ == '__main__':
+    main()
