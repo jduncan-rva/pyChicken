@@ -2,6 +2,7 @@ import os
 from signal import pause
 from datetime import datetime
 from time import sleep
+from random import randrange
 import tweeepy
 from gpiozero import MotionSensor
 from picamera import PiCamera
@@ -25,6 +26,9 @@ class PyChicken:
     )
     self.running_livestream = False
     self.motion_sensor_pin = motion_sensor_pin
+
+    self.chicken_facts = list()
+    self.chicken_facts_count = len(self.chicken_facts)
 
   def _set_timestamp(self):
     """We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
@@ -70,11 +74,21 @@ class PyChicken:
 
       pass
 
-    def _get_tweet_quote(self):
-      """grabs a random quote about chickens to attach to a tweet that is being sent out
+    def _get_tweet_fact(self):
+      """grabs a random fact about chickens to attach to a tweet that is being sent out
       """
+      fact_number = randrange(self.chicken_facts_count)
+      fact = self.chicken_facts(fact_number)
 
-      pass
+      fact_type = fact[0]
+      fact_content = fact[1]
+      fact_author = fact[2]
+
+      if fact_type == "fact":
+        message = "Chicken fact %s: %s" % (fact_number, fact_content)
+
+      if fact_type == "quote":
+        message = "Chicken Quote %s: %s --%s" % (fact_number, fact_content, fact_author)
 
     def _run_livestream(self):
       """starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
@@ -87,3 +101,12 @@ class PyChicken:
       self.running_livestream = False
 
       pass
+
+    def _add_tweet_quote(self, fact_type=fact, author=None, quote):
+      """used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
+      """
+
+      self.chicken_facts.append((fact_type, quote, author))
+      self.chicken_facts_count = len(self.chicken_facts)
+
+      return True
