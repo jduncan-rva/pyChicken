@@ -27,6 +27,8 @@ class PyChicken:
     """
     
     self.timestamp = datetime.now()
+
+    return True
     
   def _check_timestamp(self):
     """Check to see if it's OK to send out a tweet or if we should wait. Uses self.timestamp_interval as the minimum wait between events
@@ -52,7 +54,7 @@ class PyChicken:
 
     self.camera.capture(self.twitter_image)
 
-    def _send_tweet(self, attach_pic=True, message):
+    def _send_tweet(self, message, attach_pic=True):
       """takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
       """
 
