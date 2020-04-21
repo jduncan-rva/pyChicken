@@ -137,5 +137,4 @@ class pyChicken:
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
     """
 
-    self._motion_sensor
     pause()
