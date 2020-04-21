@@ -13,7 +13,7 @@ class pyChicken:
   """Python3 application for Raspberry Pis to take advantage of an onboard camera and a PIR motion sensor to automate backyard foul social media
   """
 
-  def __init__(self, motion_sensor_pin = motion_sensor_pin):
+  def __init__(self, motion_sensor_pin=motion_sensor_pin):
     self.timestamp = self._set_timestamp()
     self.tweet = True
     self.tweet_interval = (60 * 60) # max 1 tweet per hour
@@ -125,7 +125,7 @@ class pyChicken:
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
     """
 
-    "motion detected at {t}!".format(t=datetime.now())
+    print("motion detected at {t}!".format(t=datetime.now()))
 
   def run(self, options):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
