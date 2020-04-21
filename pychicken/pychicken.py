@@ -130,7 +130,7 @@ class pyChicken:
       """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
       """
       
-      f"motion detected at {datetime.now()}!"
+      "motion detected at {t}!".format(t=datetime.now())
 
     def run(self, options):
       """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
