@@ -27,6 +27,11 @@ class pyChicken:
     self.livestreams = False
     self.motion_sensor_pin = motion_sensor_pin
 
+    self.camera = PiCamera()
+    self.camera.resolution = (1024, 768)
+    print("Initializing Camera")
+    sleep(2)
+
     self.chicken_facts = list()
     self.chicken_facts_count = len(self.chicken_facts)
 
@@ -132,11 +137,6 @@ class pyChicken:
   def run(self, options):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
     """
-
-    camera = PiCamera()
-    camera.resolution = (1024, 768)
-    print("Initializing Camera")
-    sleep(2)
 
     print("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
