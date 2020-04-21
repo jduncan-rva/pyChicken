@@ -62,12 +62,12 @@ class pyChicken:
     """ Captures a still image and save it to a file for uplaoding to a tweet
     """
     
-  # we don't want to try to capture a pic if we're running a livestream
-  if not self.running_livestream: 
-    self.camera.start_preview()
-    sleep(2)
+    # we don't want to try to capture a pic if we're running a livestream
+    if not self.running_livestream: 
+      self.camera.start_preview()
+      sleep(2)
 
-    self.camera.capture(self.twitter_image)
+      self.camera.capture(self.twitter_image)
 
   def _send_tweet(self, message, attach_pic=True):
     """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
