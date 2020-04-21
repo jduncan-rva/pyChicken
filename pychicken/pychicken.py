@@ -117,7 +117,7 @@ class pyChicken:
       and loads it into the database for use when sending out tweets.
       """
 
-    def _add_tweet_quote(self, fact_type=fact, author=None, quote):
+    def _add_tweet_quote(self, quote, fact_type=fact, author=None):
       """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
       """
 
@@ -129,8 +129,8 @@ class pyChicken:
     def _motion_sensor(self):
       """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
       """
-
-      print "motion detected at %s!" % datetime.now()
+      
+      f"motion detected at {datetime.now()}!"
 
     def run(self, options):
       """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
