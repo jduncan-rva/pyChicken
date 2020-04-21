@@ -1,10 +1,11 @@
-from gpiozero import MotionSensor
+import os
 from signal import pause
 from datetime import datetime
-import tweepy
-from picamera import PiCamera
 from time import sleep
-import os
+import tweeepy
+from gpiozero import MotionSensor
+from picamera import PiCamera
+
 
 class PyChicken:
   """Python3 application for Raspberry Pis to take advantage of an onboard camera and a PIR motion sensor to automate backyard foul social media
@@ -21,6 +22,7 @@ class PyChicken:
       self.image_path,
       self.image_filename
     )
+    self.running_livestream = False
 
   def _set_timestamp(self):
     """We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
@@ -49,10 +51,12 @@ class PyChicken:
     """capture a still image and save it to a file for uplaoding to a tweet
     """
     
-    self.camera.start_preview()
-    sleep(2)
+    # we don't want to try to capture a pic if we're running a livestream
+    if not self.running_livestream: 
+      self.camera.start_preview()
+      sleep(2)
 
-    self.camera.capture(self.twitter_image)
+      self.camera.capture(self.twitter_image)
 
     def _send_tweet(self, message, attach_pic=True):
       """takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
@@ -66,8 +70,14 @@ class PyChicken:
 
       pass
 
-    def _start_live_stream(self):
+    def _run_livestream(self):
       """starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
       """
+
+      self.running_livestream = True
+
+      # TODO
+
+      self.running_livestream = False
 
       pass
