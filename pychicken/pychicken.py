@@ -17,8 +17,6 @@ class pyChicken:
     self.timestamp = self._set_timestamp()
     self.tweet = True
     self.tweet_interval = (60 * 60) # max 1 tweet per hour
-    self.camera = PiCamera()
-    self.camera.resolution = (1024, 768)
     self.image_filename = 'tweetpic.jpg'
     self.image_path = '/home/pi'
     self.twitter_image = os.path.join(
@@ -31,9 +29,6 @@ class pyChicken:
 
     self.chicken_facts = list()
     self.chicken_facts_count = len(self.chicken_facts)
-
-    pir = MotionSensor(self.motion_sensor_pin)
-    pir.when_motion = self._motion_sensor
 
   def _set_timestamp(self):
     """ We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
@@ -130,11 +125,19 @@ class pyChicken:
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
     """
 
-    def tasks():
-      "motion detected at {t}!".format(t=datetime.now())
+    "motion detected at {t}!".format(t=datetime.now())
 
   def run(self, options):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
     """
+
+    camera = PiCamera()
+    camera.resolution = (1024, 768)
+    print "Initializing Camera"
+    sleep(2)
+
+    print "Initializing Motion Sensor"
+    pir = MotionSensor(self.motion_sensor_pin)
+    pir.when_motion = self._motion_sensor
 
     pause()
