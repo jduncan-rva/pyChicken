@@ -6,12 +6,13 @@ import tweeepy
 from gpiozero import MotionSensor
 from picamera import PiCamera
 
+motion_sensor_pin = 14
 
 class PyChicken:
   """Python3 application for Raspberry Pis to take advantage of an onboard camera and a PIR motion sensor to automate backyard foul social media
   """
 
-  def __init__(self):
+  def __init__(self, motion_sensor_pin = motion_sensor_pin):
     self.timestamp = self._set_timestamp()
     self.tweet_interval = (60 * 60) # max 1 tweet per hour
     self.camera = PiCamera()
@@ -23,6 +24,7 @@ class PyChicken:
       self.image_filename
     )
     self.running_livestream = False
+    self.motion_sensor_pin = motion_sensor_pin
 
   def _set_timestamp(self):
     """We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
@@ -61,6 +63,10 @@ class PyChicken:
     def _send_tweet(self, message, attach_pic=True):
       """takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
       """
+      if self.running_livestream:
+        message = self.livestream_message
+      else:
+        message = self._get_tweet_quote()
 
       pass
 
