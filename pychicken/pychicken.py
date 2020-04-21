@@ -133,10 +133,10 @@ class pyChicken:
 
     camera = PiCamera()
     camera.resolution = (1024, 768)
-    print "Initializing Camera"
+    print("Initializing Camera")
     sleep(2)
 
-    print "Initializing Motion Sensor"
+    print("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
 
