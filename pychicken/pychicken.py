@@ -32,6 +32,9 @@ class pyChicken:
     self.chicken_facts = list()
     self.chicken_facts_count = len(self.chicken_facts)
 
+    pir = MotionSensor(self.motion_sensor_pin)
+    pir.when_motion = self._motion_sensor
+
   def _set_timestamp(self):
     """ We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
     """
@@ -59,83 +62,80 @@ class pyChicken:
     """ Captures a still image and save it to a file for uplaoding to a tweet
     """
     
-    # we don't want to try to capture a pic if we're running a livestream
-    if not self.running_livestream: 
-      self.camera.start_preview()
-      sleep(2)
+  # we don't want to try to capture a pic if we're running a livestream
+  if not self.running_livestream: 
+    self.camera.start_preview()
+    sleep(2)
 
-      self.camera.capture(self.twitter_image)
+    self.camera.capture(self.twitter_image)
 
-    def _send_tweet(self, message, attach_pic=True):
-      """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
-      """
-      if self.running_livestream:
-        message = self.livestream_message
-      else:
-        message = self._get_tweet_quote()
+  def _send_tweet(self, message, attach_pic=True):
+    """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
+    """
+    if self.running_livestream:
+      message = self.livestream_message
+    else:
+      message = self._get_tweet_quote()
 
-      pass
+    pass
 
-    def _get_tweet_fact(self):
-      """ Grabs a random fact about chickens to attach to a tweet that is being sent out
-      """
-      fact_number = randrange(self.chicken_facts_count)
-      fact = self.chicken_facts(fact_number)
+  def _get_tweet_fact(self):
+    """ Grabs a random fact about chickens to attach to a tweet that is being sent out
+    """
+    fact_number = randrange(self.chicken_facts_count)
+    fact = self.chicken_facts(fact_number)
 
-      fact_type = fact[0]
-      fact_content = fact[1]
-      fact_author = fact[2]
+    fact_type = fact[0]
+    fact_content = fact[1]
+    fact_author = fact[2]
 
-      if fact_type == "fact":
-        message = "Chicken fact %s: %s source: %s" % (fact_number, 
-        fact_content,
-        fact_author)
+    if fact_type == "fact":
+      message = "Chicken fact %s: %s source: %s" % (fact_number, 
+      fact_content,
+      fact_author)
 
-      if fact_type == "quote":
-        message = "Chicken Quote %s: %s --%s" % (fact_number, 
-        fact_content, 
-        fact_author)
+    if fact_type == "quote":
+      message = "Chicken Quote %s: %s --%s" % (fact_number, 
+      fact_content, 
+      fact_author)
 
-    def _run_livestream(self):
-      """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
-      """
+  def _run_livestream(self):
+    """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
+    """
 
-      self.running_livestream = True
+    self.running_livestream = True
 
-      # TODO
+    # TODO
 
-      self.running_livestream = False
+    self.running_livestream = False
 
-      pass
+    pass
 
-    def _load_facts_file(self, facts_file):
-      """ Takes a CSV fie in the format:
-      <fact_type>,<fact_content>,<fact_author>
-      and loads it into the database for use when sending out tweets.
-      """
+  def _load_facts_file(self, facts_file):
+    """ Takes a CSV fie in the format:
+    <fact_type>,<fact_content>,<fact_author>
+    and loads it into the database for use when sending out tweets.
+    """
 
-    def _add_tweet_quote(self, quote, fact_type=fact, author=None):
-      """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
-      """
+  def _add_tweet_quote(self, quote, fact_type=fact, author=None):
+    """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
+    """
 
-      self.chicken_facts.append((fact_type, quote, author))
-      self.chicken_facts_count = len(self.chicken_facts)
+    self.chicken_facts.append((fact_type, quote, author))
+    self.chicken_facts_count = len(self.chicken_facts)
 
-      return True
+    return True
 
-    def _motion_sensor(self):
-      """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
-      """
+  def _motion_sensor(self):
+    """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
+    """
 
-      def tasks():
-        "motion detected at {t}!".format(t=datetime.now())
+    def tasks():
+      "motion detected at {t}!".format(t=datetime.now())
 
-      pir = MotionSensor(self.motion_sensor_pin)
-      pir.when_motion = tasks
-      
-    def run(self, options):
-      """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
-      """
+  def run(self, options):
+    """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
+    """
 
-      self._motion_sensor
-      pause()
+    self._motion_sensor
+    pause()
