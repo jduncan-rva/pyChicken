@@ -127,6 +127,7 @@ class pyChicken:
 
     print("motion detected at {t}!".format(t=datetime.now()))
     print("capturing image at {p}".format(p=self.twitter_image))
+    self._image_capture()
 
   def run(self, options):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
