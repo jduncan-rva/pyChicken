@@ -3,7 +3,7 @@ from signal import pause
 from datetime import datetime
 from time import sleep
 from random import randrange
-import tweeepy
+import tweepy
 from gpiozero import MotionSensor
 from picamera import PiCamera
 
@@ -33,7 +33,7 @@ class pyChicken:
     self.chicken_facts_count = len(self.chicken_facts)
 
     self.pir = MotionSensor(self.motion_sensor_pin)
-    self.pir.when_motion = self._motion_sensor()
+    self.pir.when_motion = self._motion_sensor
 
   def _set_timestamp(self):
     """ We don't want a chicken walking around all the time to cause a twitter storm. So we'll set a timestamp and use it for comparison so we don't send out too many pictures.
