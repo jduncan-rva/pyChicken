@@ -1,0 +1,3 @@
+.pychicken.conf
+*.pyc
+*.egg*
