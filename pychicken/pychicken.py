@@ -18,12 +18,8 @@ class pyChicken:
 
   def __init__(self, options):
 
-    
-    logging.basicConfig(filename='pychicken.log')
-    self.logger = logging.getLogger(__name__)
-    
     # Grab the config file and read in the options
-    self.logger.debug("Processing __init__.py")
+    logging.debug("Processing __init__.py")
     self.config = configparser.ConfigParser()
     self.config.read(options.config)
 
@@ -38,14 +34,14 @@ class pyChicken:
     # There's a motion sensor installed and we want to use it via the GPIO pins
     self.use_motion_sensor = self.config['motion_sensor']['enabled']
     if self.use_motion_sensor:
-      self.logger.debug("Setting motion sensor pin number")
+      logging.debug("Setting motion sensor pin number")
       self.motion_sensor_pin = self.config['motion_sensor']['gpio_pin']
 
     # We're going to be using a camera attached to our Raspberry Pi Note: this
     # is written for direct-connected cameras, not USB cameras as of right now
     self.use_camera = self.config['camera']['enabled']
     if self.use_camera:
-      self.logger.info("Initializing camera")
+      logging.info("Initializing camera")
       self.camera = PiCamera()
       self.camera.resolution = (1024, 768)
       sleep(2)
@@ -70,7 +66,7 @@ class pyChicken:
     
     self.tweet_interval = self.config['twitter']['tweet_interval']
     if self.use_camera:
-      self.logger.info("Seetting up media information for Twitter")
+      logging.info("Seetting up media information for Twitter")
       self.image_filename = 'tweetpic.jpg'
       self.image_path = '/home/pi'
       self.twitter_image = os.path.join(
@@ -97,9 +93,9 @@ class pyChicken:
     try:
       api.verify_credentials()
     except Exception as e:
-      self.logger.error("Error verifying Twitter API", exc_info=True)
+      logging.error("Error verifying Twitter API", exc_info=True)
       raise e
-    self.logger.info("Twitter API connected and verified")
+    logging.info("Twitter API connected and verified")
 
     return api
 
@@ -132,15 +128,15 @@ class pyChicken:
     
     # We don't want to capture an image if the camera is flagged as disabled
     if not self.use_camera:
-      self.logger.info("Camera disabled. Not going to capture image")
+      logging.info("Camera disabled. Not going to capture image")
       return False
     # we don't want to try to capture a pic if we're running a livestream
     if self.running_livestream:
-      self.logger.info("Livestream running. Not going to capture image")
+      logging.info("Livestream running. Not going to capture image")
       return False
     else:
       try:
-        self.logger.info("Preparing to capture image")
+        logging.info("Preparing to capture image")
         self.camera.start_preview()
         sleep(2)
 
@@ -148,7 +144,7 @@ class pyChicken:
         return True
 
       except Exception as e:
-        self.logger.error("Unable to capture image.", exc_info=True)
+        logging.error("Unable to capture image.", exc_info=True)
         raise e
 
   def _send_tweet(self, message, attach_pic=True):
@@ -157,14 +153,14 @@ class pyChicken:
 
     message = self._get_tweet_fact()
     if self._image_capture(): # This returns True if an image is captured
-      self.logger.info("sending tweet with image")
+      logging.info("sending tweet with image")
       media = self.twitter.media_upload(self.twitter_image)
       media_ids = list(media.media_id_string)
 
       self.twitter_api.update_status(status=message, media_ids=media_ids)
 
     else:
-      self.logger.info("sending tweet without image")
+      logging.info("sending tweet without image")
       self.twitter_api.update_status(status=message)
 
   def _get_tweet_fact(self):
@@ -207,24 +203,24 @@ class pyChicken:
     use when sending out tweets.
     """
 
-    self.logger.info("Loading facts from remote %s", self.facts_url)
+    logging.info("Loading facts from remote %s", self.facts_url)
     r = requests.get(self.facts_url, stream=True)
     self.facts = yaml.load(r.content, Loader=yaml.BaseLoader)
 
     self.facts_count = len(self.facts)
-    self.logger.info("Loaded %s facts", self.facts_count)
+    logging.info("Loaded %s facts", self.facts_count)
 
   def _motion_sensor(self):
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
     """
 
-    self.logger.info("Motion sensor even triggered")
+    logging.info("Motion sensor even triggered")
     
   def _run_motion_sensor(self):
     """The threaded motion sensor object"""
-    self.logger.info("Starting motion sensor thread")
+    logging.info("Starting motion sensor thread")
 
-    self.logger.info("Initializing Motion Sensor")
+    logging.info("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
 
