@@ -19,7 +19,8 @@ class pyChicken:
   def __init__(self, options):
 
     
-    self.logger = logging.basicConfig(filename='pychicken.log')
+    logging.basicConfig(filename='pychicken.log')
+    self.logger = logging.getLogger(__name__)
     
     # Grab the config file and read in the options
     self.logger.debug("Processing __init__.py")
