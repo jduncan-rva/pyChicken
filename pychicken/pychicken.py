@@ -3,6 +3,7 @@ from signal import pause
 from datetime import datetime
 from time import sleep
 from random import randrange
+from contextlib import closing
 import configparser
 import csv
 import requests
