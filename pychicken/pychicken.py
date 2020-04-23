@@ -30,7 +30,7 @@ class pyChicken:
     if use_facts:
       self.facts_url = self.config['facts']['facts_url']
       self.facts = list()
-      self._load_facts_file())
+      self._load_facts_file()
       self.facts_count = len(self.facts)
 
     # There's a motion sensor installed and we want to use it via the GPIO pins
@@ -57,10 +57,9 @@ class pyChicken:
       self.twitter = self._create_twitter_api()
       self._setup_twitter_params() 
 
-    self.send_livestream = self.config['livestream']['send_livestream']
-  
-    self.chicken_facts = list()
-    self.chicken_facts_count = len(self.chicken_facts)
+    self.send_livestream = self.config['livestream']['enabled']
+    # TODO
+
     self.timestamp = self._set_timestamp()
 
   def _setup_twitter_params(self):
@@ -200,14 +199,14 @@ class pyChicken:
 
     pass
 
-  def _load_facts_file(self, facts_file):
+  def _load_facts_file(self):
     """ Takes a CSV fie in the format:
     <fact_type>,<fact_content>,<fact_author> and loads it into the database for
     use when sending out tweets.
     """
 
     self.logger.info("Loading facts from remote %s", self.facts_url)
-    with closing(requests.get(url, stream=True)) as r:
+    with closing(requests.get(self.facts_url, stream=True)) as r:
       reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
       for row in reader:
         self.facts.append(row)
