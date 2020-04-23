@@ -1,16 +1,15 @@
-facts:
-  - type: fact
-    content: There are more chickens on earth than people – 25 billion. There are also more chickens than any other bird species.
-    source: https://www.thefactsite.com/chicken-facts/
-  - type: fact
-    content: Chickens can remember over 100 different faces of people or animals.
-    source: https://www.thefactsite.com/chicken-facts/
-  - type: fact
-    content: A mother hen turns her eggs about 50 times per day, and can lay more than 300 eggs per year.
-    source: https://www.thefactsite.com/chicken-facts/
-  - type: fact
-    content: The record number of eggs laid by a chicken in one day is 7. The record number for eggs laid by a chicken in one year is 371.
-    source: https://www.thefactsite.com/chicken-facts/
-  - type: fact
-    content: An egg develops at 88 degrees Fahrenheit, and is laid at 105 degrees.
-    source: https://www.thefactsite.com/chicken-facts/
+- type: fact
+  content: There are more chickens on earth than people – 25 billion. There are also more chickens than any other bird species.
+  source: https://www.thefactsite.com/chicken-facts/
+- type: fact
+  content: Chickens can remember over 100 different faces of people or animals.
+  source: https://www.thefactsite.com/chicken-facts/
+- type: fact
+  content: A mother hen turns her eggs about 50 times per day, and can lay more than 300 eggs per year.
+  source: https://www.thefactsite.com/chicken-facts/
+- type: fact
+  content: The record number of eggs laid by a chicken in one day is 7. The record number for eggs laid by a chicken in one year is 371.
+  source: https://www.thefactsite.com/chicken-facts/
+- type: fact
+  content: An egg develops at 88 degrees Fahrenheit, and is laid at 105 degrees.
+  source: https://www.thefactsite.com/chicken-facts/

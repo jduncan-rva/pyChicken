@@ -207,10 +207,7 @@ class pyChicken:
 
     self.logger.info("Loading facts from remote %s", self.facts_url)
     r = requests.get(self.facts_url, stream=True)
-    data = yaml.load(r.content, Loader=yaml.BaseLoader)
-    for f in data['facts']:
-      row = list(f['type'], f['content'], f['source'])
-      self.facts.append(row)
+    self.facts = yaml.load(r.content, Loader=yaml.BaseLoader)
 
     self.facts_count = len(self.facts)
     self.logger.info("Loaded %s facts", self.facts_count)
