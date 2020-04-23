@@ -7,6 +7,7 @@ import configparser
 import csv
 import requests
 import logging
+import threading
 import tweepy
 from gpiozero import MotionSensor
 from picamera import PiCamera
@@ -19,10 +20,18 @@ class pyChicken:
 
     self.logger = logging.getLogger()
     
-    # grab the config file and read in the options
+    # Grab the config file and read in the options
     self.logger.debug("Processing __init__.py")
     self.config = configparser.ConfigParser()
     self.config.read(options.config)
+
+    # Get state of facts engine 
+    use_facts = self.config['facts']['enabled']
+    if use_facts:
+      self.facts_url = self.config['facts']['facts_url']
+      self.facts = list()
+      self._load_facts_file())
+      self.facts_count = len(self.facts)
 
     # There's a motion sensor installed and we want to use it via the GPIO pins
     self.use_motion_sensor = self.config['motion_sensor']['enabled']
@@ -120,6 +129,10 @@ class pyChicken:
     """ Captures a still image and save it to a file for uplaoding to a tweet
     """
     
+    # We don't want to capture an image if the camera is flagged as disabled
+    if not self.use_camera:
+      self.logger.info("Camera disabled. Not going to capture image")
+      return False
     # we don't want to try to capture a pic if we're running a livestream
     if self.running_livestream:
       self.logger.info("Livestream running. Not going to capture image")
@@ -131,7 +144,7 @@ class pyChicken:
         sleep(2)
 
         self.camera.capture(self.twitter_image)
-        return False
+        return True
 
       except Exception as e:
         self.logger.error("Unable to capture image.", exc_info=True)
@@ -140,19 +153,24 @@ class pyChicken:
   def _send_tweet(self, message, attach_pic=True):
     """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
     """
-    if self.running_livestream:
-      self.twitter_api.update_status(self.livestream_message)
-    else:
-      message = self._get_tweet_quote()
-      status = self.twitter_api.update_with_media(self.twitter_image, message)
 
-      self.twitter_api.update_status(status = message)
+    message = self._get_tweet_fact()
+    if self._image_capture(): # This returns True if an image is captured
+      self.logger.info("sending tweet with image")
+      media = self.twitter.media_upload(self.twitter_image)
+      media_ids = list(media.media_id_string)
+
+      self.twitter_api.update_status(status=message, media_ids=media_ids)
+
+    else:
+      self.logger.info("sending tweet without image")
+      self.twitter_api.update_status(status=message)
 
   def _get_tweet_fact(self):
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
     """
-    fact_number = randrange(self.chicken_facts_count)
-    fact = self.chicken_facts(fact_number)
+    fact_number = randrange(self.facts_count)
+    fact = self.facts(fact_number)
 
     fact_type = fact[0]
     fact_content = fact[1]
@@ -167,6 +185,8 @@ class pyChicken:
       message = "Chicken Quote %s: %s --%s" % (fact_number, 
       fact_content, 
       fact_author)
+
+    return message
 
   def _run_livestream(self):
     """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
@@ -186,29 +206,43 @@ class pyChicken:
     use when sending out tweets.
     """
 
-  def _add_tweet_quote(self, quote, fact_type='fact', author=None):
-    """ Used to add a quote to the running instance of py-chicken, and update the counter for the number of facts
-    """
+    self.logger.info("Loading facts from remote %s", self.facts_url)
+    with closing(requests.get(url, stream=True)) as r:
+      reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
+      for row in reader:
+        self.facts.append(row)
 
-    self.chicken_facts.append((fact_type, quote, author))
-    self.chicken_facts_count = len(self.chicken_facts)
-
-    return True
+    self.facts_count = len(self.facts)
+    self.logger.info("Loaded %s facts", self.facts_count)
 
   def _motion_sensor(self):
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
     """
 
-    print("motion detected at {t}!".format(t=datetime.now()))
-    print("capturing image at {p}".format(p=self.twitter_image))
-    self._image_capture()
-
-  def run(self):
-    """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
-    """
+    self.logger.info("Motion sensor even triggered")
+    
+  def _run_motion_sensor(self):
+    """The threaded motion sensor object"""
+    self.logger.info("Starting motion sensor thread")
 
     print("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
 
     pause()
+
+  def _run_retrieve_facts(self):
+    """The threaded facts retrieval object"""
+
+    self.facts = list()
+    self._load_facts_file()  
+
+  def run(self):
+    """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
+    """
+
+    facts_thread = threading.Thread(target=self._run_retrieve_facts)
+    motion_thread = threading.Thread(target=self._run_motion_sensor)
+
+    facts_thread.start()
+    motion_thread.start()
