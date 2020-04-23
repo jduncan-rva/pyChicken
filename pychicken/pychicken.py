@@ -18,7 +18,8 @@ class pyChicken:
 
   def __init__(self, options):
 
-    self.logger = logging.getLogger()
+    
+    self.logger = logging.basicConfig(filename='pychicken.log')
     
     # Grab the config file and read in the options
     self.logger.debug("Processing __init__.py")
@@ -222,7 +223,7 @@ class pyChicken:
     """The threaded motion sensor object"""
     self.logger.info("Starting motion sensor thread")
 
-    print("Initializing Motion Sensor")
+    self.logger.info("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
 
