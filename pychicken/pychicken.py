@@ -3,7 +3,6 @@ from signal import pause
 from datetime import datetime
 from time import sleep
 from random import randrange
-from contextlib import closing
 import configparser
 import csv
 import requests
@@ -207,10 +206,10 @@ class pyChicken:
     """
 
     self.logger.info("Loading facts from remote %s", self.facts_url)
-    with closing(requests.get(self.facts_url, stream=True).text) as r:
-      reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
-      for row in reader:
-        self.facts.append(row)
+    r = requests.get(self.facts_url, stream=True)
+    reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
+    for row in reader:
+      self.facts.append(row)
 
     self.facts_count = len(self.facts)
     self.logger.info("Loaded %s facts", self.facts_count)
