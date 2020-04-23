@@ -4,8 +4,8 @@ from datetime import datetime
 from time import sleep
 from random import randrange
 import configparser
-import csv
 import requests
+import yaml
 import logging
 import threading
 import tweepy
@@ -207,8 +207,9 @@ class pyChicken:
 
     self.logger.info("Loading facts from remote %s", self.facts_url)
     r = requests.get(self.facts_url, stream=True)
-    reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
-    for row in reader:
+    data = yaml.load(r.content, Loader=yaml.BaseLoader)
+    for f in data['facts']:
+      row = list(f['type'], f['content'], f['source'])
       self.facts.append(row)
 
     self.facts_count = len(self.facts)
