@@ -207,7 +207,7 @@ class pyChicken:
     """
 
     self.logger.info("Loading facts from remote %s", self.facts_url)
-    with closing(requests.get(self.facts_url, stream=True)) as r:
+    with closing(requests.get(self.facts_url, stream=True).text) as r:
       reader = csv.reader(r.iter_lines(), delimiter=',', quotechar='"')
       for row in reader:
         self.facts.append(row)
