@@ -217,13 +217,13 @@ class pyChicken:
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
     """
 
-    logging.info("Motion sensor even triggered")
+    logging.info("Motion sensor event triggered")
+    self._image_capture()
     
   def _run_motion_sensor(self):
     """The threaded motion sensor object"""
 
     logging.info("Starting Motion Sensor Thread")
-    logging.info("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
 
@@ -233,6 +233,7 @@ class pyChicken:
     """The threaded facts retrieval object"""
 
     logging.info("Starting Facts Thread")
+    sleep(3600)
     self.facts, self.facts_count = self._load_facts_file()  
 
   def run(self):
