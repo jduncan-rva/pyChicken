@@ -56,8 +56,12 @@ class pyChicken:
       self.twitter = self._create_twitter_api()
       self._setup_twitter_params() 
 
+    # We set this to false to start because it's checked by self._image_capture
+    # TODO - make this cleaner
+    self.running_livestream = False
+    # check to see if we're going to be running livestreams
     self.send_livestream = self.config['livestream']['enabled']
-    # TODO
+    if self.send_livestream:
 
     self.timestamp = self._set_timestamp()
 
