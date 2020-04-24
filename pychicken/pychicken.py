@@ -24,70 +24,71 @@ class pyChicken:
                       format='%(asctime)s %(name)s %(levelname)s: %(message)s',
                       datefmt='%m-%d %H:%M:%S')
     logging.debug("Processing __init__.py")
-    self.config = configparser.ConfigParser()
-    self.config.read(options.config)
+    config = configparser.ConfigParser()
+    config.read(options.config)
+
     # Get state of facts engine 
-    use_facts = self.config['facts']['enabled']
-    if use_facts:
-      self.facts_url = self.config['facts']['facts_url']
-      self.facts, self.facts_count = self._load_facts_file()
-
+    use_facts = config['facts']['enabled']
     # There's a motion sensor installed and we want to use it via the GPIO pins
-    self.use_motion_sensor = self.config['motion_sensor']['enabled']
-    if self.use_motion_sensor:
-      logging.debug("Setting motion sensor pin number")
-      self.motion_sensor_pin = self.config['motion_sensor']['gpio_pin']
-
+    use_motion_sensor = config['motion_sensor']['enabled']
     # We're going to be using a camera attached to our Raspberry Pi Note: this
     # is written for direct-connected cameras, not USB cameras as of right now
-    self.use_camera = self.config['camera']['enabled']
-    if self.use_camera:
-      logging.info("Initializing camera")
-      self.camera = PiCamera()
-      self.camera.resolution = (1024, 768)
-      sleep(2)
-
+    use_camera = config['camera']['enabled']
+    annotate_images = config['camera']['dispay_text']
     # check to see if we're going to be sending tweets
-    self.send_tweets = self.config['twitter']['enabled']
+    self.send_tweets = config['twitter']['enabled']
+    # check to see if we're going to be running livestreams
+    send_livestream = self.config['livestream']['enabled']
+    
+    if use_facts:
+      self.facts_url = config['facts']['facts_url']
+      self.facts, self.facts_count = self._load_facts_file()
+    
+    if use_motion_sensor:
+      logging.info("Setting motion sensor pin number")
+      self.motion_sensor_pin = config['motion_sensor']['gpio_pin']
+
+    if use_camera:
+      if config['camera']['text']:
+        annotate_images = config['camera']['text']
+      else:
+        annotate_images = False
+      self._initialize_camera(annotate_images=annotate_images)
 
     # If we're going to be sending out tweets we need to set up access through
     # the Twitter API
-    if self.send_tweets:
-      self.twitter = self._create_twitter_api()
-      self._setup_twitter_params() 
+    if send_tweets:
+
+      self.tweet_interval = config['twitter']['tweet_interval']
+      consumer_key = config['twitter']['consumer_key']
+      consumer_secret = config['twitter']['consumer_secret']
+      access_token = config['twitter']['access_token']
+      access_token_secret = config['twitter']['access_token_secret']
+
+      self.twitter = self._create_twitter_api(key=consumer_key,
+                     secret=consumer_secret,
+                     token=access_token,
+                     token_secret=access_token_secret,
+                     use_camera=use_camera)
 
     # We set this to false to start because it's checked by self._image_capture
     # TODO - make this cleaner
     self.running_livestream = False
-    # check to see if we're going to be running livestreams
-    self.send_livestream = self.config['livestream']['enabled']
-    # if self.send_livestream:
-    #   TODO
-    
     self.timestamp = self._set_timestamp()
 
-  def _setup_twitter_params(self):
-    """ Sets up some needed parameterss to properly process information and send it to Twitter.
-    """
-    
-    self.tweet_interval = self.config['twitter']['tweet_interval']
-    if self.use_camera:
-      logging.info("Seetting up media information for Twitter")
-      self.image_filename = 'tweetpic.jpg'
-      self.image_path = '/home/pi'
-      self.twitter_image = os.path.join(
-                         self.image_path,
-                         self.image_filename
-      )
+  def _initialize_camera(self, annotate_images):
+    """ Gets the camera set up and ready for use"""
 
-  def _create_twitter_api(self):
+    if annotate_images:
+        self.camera_text = config['camera']['text']
+      logging.info("Initializing camera")
+      self.camera = PiCamera()
+      self.camera.resolution = config['camera']['resolution']
+      sleep(2)
+
+  def _create_twitter_api(self, key, secret, token, token_secret, use_camera):
     """sets up and confirms the Twitter API is functional. Returns the twitter API object for use in other functions.
     """
-
-    consumer_key = self.config['twitter']['consumer_key']
-    consumer_secret = self.config['twitter']['consumer_secret']
-    access_token = self.config['twitter']['access_token']
-    access_token_secret = self.config['twitter']['access_token_secret']
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
@@ -102,6 +103,15 @@ class pyChicken:
       logging.error("Error verifying Twitter API", exc_info=True)
       raise e
     logging.info("Twitter API connected and verified")
+
+    if use_camera:
+      logging.info("Seetting up media information for Twitter")
+      self.image_filename = 'tweetpic.jpg'
+      self.image_path = '/home/pi'
+      self.twitter_image = os.path.join(
+                         self.image_path,
+                         self.image_filename
+      )
 
     return api
 
@@ -143,7 +153,8 @@ class pyChicken:
     else:
       try:
         logging.info("Capturing image")
-        self.camera.annotate_text = "@RealHensOfOakCity"
+        if self.camera_text:
+          self.camera.annotate_text = self.camera_text
         self.camera.capture(self.twitter_image)
         return True
 
