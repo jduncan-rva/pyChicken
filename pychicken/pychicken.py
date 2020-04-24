@@ -170,9 +170,9 @@ class pyChicken:
     fact_number = randrange(self.facts_count)
     fact = self.facts(fact_number)
 
-    fact_type = fact[0]
-    fact_content = fact[1]
-    fact_author = fact[2]
+    fact_type = fact['type']
+    fact_content = fact['content']
+    fact_author = fact['source']
 
     if fact_type == "fact":
       message = "Chicken fact %s: %s source: %s" % (fact_number, 
@@ -204,7 +204,7 @@ class pyChicken:
     use when sending out tweets.
     """
 
-    logging.info("Loading facts from remote %s", self.facts_url)
+    logging.info("Loading facts from %s", self.facts_url)
     r = requests.get(self.facts_url, stream=True)
     facts = yaml.load(r.content, Loader=yaml.BaseLoader)
 
@@ -232,16 +232,17 @@ class pyChicken:
   def _run_retrieve_facts(self):
     """The threaded facts retrieval object"""
 
-    logging("Starting Facts Thread")
-    self.facts = list()
-    self._load_facts_file()  
+    logging.info("Starting Facts Thread")
+    self.facts, self.facts_count = self._load_facts_file()  
 
   def run(self):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
     """
 
-    facts_thread = threading.Thread(target=self._run_retrieve_facts)
-    motion_thread = threading.Thread(target=self._run_motion_sensor)
+    facts_thread = threading.Thread(name='facts', 
+                  target=self._run_retrieve_facts)
+    motion_thread = threading.Thread(name='motion_sensor',
+                  target=self._run_motion_sensor)
 
     facts_thread.start()
     motion_thread.start()
