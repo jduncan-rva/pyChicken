@@ -19,10 +19,13 @@ class pyChicken:
   def __init__(self, options):
 
     # Grab the config file and read in the options
+    logging.basicConfig(filename='pychicken.log',
+                      level=logging.DEBUG,
+                      format='%(asctime)s %(name)s %(levelname)s: %(message)s',
+                      datefmt='%m-%d %H:%M:%S')
     logging.debug("Processing __init__.py")
     self.config = configparser.ConfigParser()
     self.config.read(options.config)
-
     # Get state of facts engine 
     use_facts = self.config['facts']['enabled']
     if use_facts:
