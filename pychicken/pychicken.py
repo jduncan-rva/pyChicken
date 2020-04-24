@@ -30,9 +30,7 @@ class pyChicken:
     use_facts = self.config['facts']['enabled']
     if use_facts:
       self.facts_url = self.config['facts']['facts_url']
-      self.facts = list()
-      self._load_facts_file()
-      self.facts_count = len(self.facts)
+      self.facts, self.facts_count = self._load_facts_file()
 
     # There's a motion sensor installed and we want to use it via the GPIO pins
     self.use_motion_sensor = self.config['motion_sensor']['enabled']
@@ -208,10 +206,12 @@ class pyChicken:
 
     logging.info("Loading facts from remote %s", self.facts_url)
     r = requests.get(self.facts_url, stream=True)
-    self.facts = yaml.load(r.content, Loader=yaml.BaseLoader)
+    facts = yaml.load(r.content, Loader=yaml.BaseLoader)
 
-    self.facts_count = len(self.facts)
-    logging.info("Loaded %s facts", self.facts_count)
+    facts_count = len(facts)
+    logging.info("Loaded %s facts", facts_count)
+
+    return facts, facts_count
 
   def _motion_sensor(self):
     """ Events to trigger when the motion sensor is triggered. things ike social media and livestreams and pics and whatever else you can come up with.
@@ -221,8 +221,8 @@ class pyChicken:
     
   def _run_motion_sensor(self):
     """The threaded motion sensor object"""
-    logging.info("Starting motion sensor thread")
 
+    logging.info("Starting Motion Sensor Thread")
     logging.info("Initializing Motion Sensor")
     pir = MotionSensor(self.motion_sensor_pin)
     pir.when_motion = self._motion_sensor
@@ -232,6 +232,7 @@ class pyChicken:
   def _run_retrieve_facts(self):
     """The threaded facts retrieval object"""
 
+    logging("Starting Facts Thread")
     self.facts = list()
     self._load_facts_file()  
 
