@@ -142,10 +142,8 @@ class pyChicken:
       return False
     else:
       try:
-        logging.info("Preparing to capture image")
-        self.camera.start_preview()
-        sleep(2)
-
+        logging.info("Capturing image")
+        self.camera.annotate_text = "@RealHensOfOakCity"
         self.camera.capture(self.twitter_image)
         return True
 
@@ -191,17 +189,15 @@ class pyChicken:
 
     return message
 
-  def _run_livestream(self):
-    """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
-    """
+  # def _run_livestream(self):
+  #   """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
+  #   """
 
-    self.running_livestream = True
+  #   self.running_livestream = True
 
-    # TODO
+  #   # TODO
 
-    self.running_livestream = False
-
-    pass
+  #   self.running_livestream = False
 
   def _load_facts_file(self):
     """ Takes a CSV fie in the format:
