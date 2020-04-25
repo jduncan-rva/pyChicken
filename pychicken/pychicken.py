@@ -36,7 +36,7 @@ class pyChicken:
     use_camera = config['camera']['enabled']
     annotate_images = config['camera']['dispay_text']
     # check to see if we're going to be sending tweets
-    self.send_tweets = config['twitter']['enabled']
+    send_tweets = config['twitter']['enabled']
     # check to see if we're going to be running livestreams
     send_livestream = self.config['livestream']['enabled']
     
@@ -50,10 +50,10 @@ class pyChicken:
 
     if use_camera:
       if config['camera']['text']:
-        annotate_images = config['camera']['text']
+        camera_text = config['camera']['text']
       else:
-        annotate_images = False
-      self._initialize_camera(annotate_images=annotate_images)
+        camera_text = False
+      self._initialize_camera(camera_text=camera_text)
 
     # If we're going to be sending out tweets we need to set up access through
     # the Twitter API
@@ -76,14 +76,14 @@ class pyChicken:
     self.running_livestream = False
     self.timestamp = self._set_timestamp()
 
-  def _initialize_camera(self, annotate_images):
+  def _initialize_camera(self, camera_text):
     """ Gets the camera set up and ready for use"""
 
-    if annotate_images:
-        self.camera_text = config['camera']['text']
       logging.info("Initializing camera")
+      if camera_text:
+        self.camera.annotate_text = camera_text
       self.camera = PiCamera()
-      self.camera.resolution = config['camera']['resolution']
+      self.camera.resolution = (1024, 768)
       sleep(2)
 
   def _create_twitter_api(self, key, secret, token, token_secret, use_camera):
@@ -146,21 +146,16 @@ class pyChicken:
     if not self.use_camera:
       logging.info("Camera disabled. Not going to capture image")
       return False
-    # we don't want to try to capture a pic if we're running a livestream
-    if self.running_livestream:
-      logging.info("Livestream running. Not going to capture image")
-      return False
-    else:
-      try:
-        logging.info("Capturing image")
-        if self.camera_text:
-          self.camera.annotate_text = self.camera_text
-        self.camera.capture(self.twitter_image)
-        return True
+    try:
+      logging.info("Capturing image")
+      if self.camera_text:
+        self.camera.annotate_text = self.camera_text
+      self.camera.capture(self.twitter_image)
+      return True
 
-      except Exception as e:
-        logging.error("Unable to capture image.", exc_info=True)
-        raise e
+    except Exception as e:
+      logging.error("Unable to capture image.", exc_info=True)
+      raise e
 
   def _send_tweet(self, message, attach_pic=True):
     """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
