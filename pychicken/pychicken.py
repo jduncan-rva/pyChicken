@@ -161,7 +161,7 @@ class pyChicken:
       logging.info("sending tweet with image")
       media = self.twitter.media_upload(self.twitter_image)
       logging.info("uploading twitter media: %s", media.media_id_string)
-      media_ids = list(media.media_id_string)
+      media_ids = list(media.media_id)
 
       self.twitter.update_status(status=message, media_ids=media_ids)
 
