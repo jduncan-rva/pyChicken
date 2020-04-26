@@ -238,7 +238,7 @@ class pyChicken:
       self.running_livestream = True
       self._initialize_camera()
       youtube_url = 'rtmp://a.rtmp.youtube.com/live2/'
-      stream_cmd = 'ffmpeg -f h264 -r 25 -i - -itsoffset 5.5 -fflags nobuffer -f alsa -ac 1 -i hw:1,0 -vcodec copy -acodec aac -ac 1 -ar 8000 -ab 32k -map 0:0 -map 1:0 -strict experimental -f flv %s%s' % (youtube_url, self.youtube_key)
+      stream_cmd = 'ffmpeg -f h264 -r 25 -i - -itsoffset 5.5 -fflags nobuffer -f alsa -ac 1 -i hw:1,0 -vcodec copy -acodec aac -ac 1 -ar 8000 -ab 32k -map 0:0 -map 1:0 -ss 30 -strict experimental -f flv %s%s' % (youtube_url, self.youtube_key)
 
       stream_pipe = subprocess.Popen(stream_cmd, shell=True, 
               stdin=subprocess.PIPE)
@@ -298,8 +298,8 @@ class pyChicken:
   def _run_livestream(self):
     """The threaded livestream object"""
 
-    logging.info("Starting livestream thread")
     sleep(30)
+    logging.info("Starting livestream thread in 30 seconds")
     self._send_livestream()
 
   def run(self):
