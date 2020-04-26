@@ -161,18 +161,17 @@ class pyChicken:
       media_id = list()
       logging.info("sending tweet with image")
       media = self.twitter.media_upload(self.twitter_image)
-      logging.info("uploading twitter media: %s", media.media_id_string)
+      logging.debug("uploading twitter media: %s", media.media_id_string)
       media_id.append(media.media_id)
 
-      self.twitter.update_status(status=message, media_ids=media_id)
-
-      return update.id
+      update = self.twitter.update_status(status=message, media_ids=media_id)
 
     else:
       logging.info("sending tweet without image")
       update = self.twitter.update_status(status=message)
 
-      return update.id
+    logging.info("Updated Twitter status: %s", update.id)
+    return update.id
 
   def _get_tweet_fact(self):
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
