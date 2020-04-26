@@ -152,7 +152,7 @@ class pyChicken:
       logging.error("Unable to capture image.", exc_info=True)
       raise e
 
-  def _send_tweet(self, message, attach_pic=True):
+  def _send_tweet(self):
     """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
     """
 
@@ -164,9 +164,13 @@ class pyChicken:
 
       self.twitter.update_status(status=message, media_ids=media_ids)
 
+      return update.id
+
     else:
       logging.info("sending tweet without image")
-      self.twitter.update_status(status=message)
+      update = self.twitter.update_status(status=message)
+
+      return update.id
 
   def _get_tweet_fact(self):
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
@@ -220,7 +224,7 @@ class pyChicken:
     """
 
     logging.info("Motion sensor event triggered")
-    self._image_capture()
+    self._send_tweet()
     
   def _run_motion_sensor(self):
     """The threaded motion sensor object"""
