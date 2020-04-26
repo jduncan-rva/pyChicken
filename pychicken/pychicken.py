@@ -314,3 +314,4 @@ class pyChicken:
 
     facts_thread.start()
     motion_thread.start()
+    livestream_thread.start()
