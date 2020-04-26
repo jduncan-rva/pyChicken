@@ -144,7 +144,7 @@ class pyChicken:
     
     try:
       logging.info("Capturing image")
-      self.camera.capture(self.twitter_image, use_video_stream=True)
+      self.camera.capture(self.twitter_image, use_video_port=True)
       
       return True
 
