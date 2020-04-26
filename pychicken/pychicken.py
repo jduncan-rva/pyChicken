@@ -176,7 +176,7 @@ class pyChicken:
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
     """
     fact_number = randrange(self.facts_count)
-    fact = self.facts(fact_number)
+    fact = self.facts[fact_number]
 
     fact_type = fact['type']
     fact_content = fact['content']
