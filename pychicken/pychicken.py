@@ -8,6 +8,7 @@ import requests
 import yaml
 import logging
 import threading
+import subprocess
 import tweepy
 from gpiozero import MotionSensor
 from picamera import PiCamera
@@ -34,11 +35,10 @@ class pyChicken:
     # We're going to be using a camera attached to our Raspberry Pi Note: this
     # is written for direct-connected cameras, not USB cameras as of right now
     use_camera = config['camera']['enabled']
-    annotate_images = config['camera']['dispay_text']
     # check to see if we're going to be sending tweets
     send_tweets = config['twitter']['enabled']
     # check to see if we're going to be running livestreams
-    send_livestream = self.config['livestream']['enabled']
+    send_livestream = config['livestream']['enabled']
     
     if use_facts:
       self.facts_url = config['facts']['facts_url']
@@ -79,19 +79,19 @@ class pyChicken:
   def _initialize_camera(self, camera_text):
     """ Gets the camera set up and ready for use"""
 
-      logging.info("Initializing camera")
-      if camera_text:
-        self.camera.annotate_text = camera_text
-      self.camera = PiCamera()
-      self.camera.resolution = (1024, 768)
-      sleep(2)
+    logging.info("Initializing camera")
+    self.camera = PiCamera()
+    self.camera.resolution = (1024, 768)
+    if camera_text:
+      self.camera.annotate_text = camera_text
+    sleep(2)
 
   def _create_twitter_api(self, key, secret, token, token_secret, use_camera):
     """sets up and confirms the Twitter API is functional. Returns the twitter API object for use in other functions.
     """
 
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
+    auth = tweepy.OAuthHandler(key, secret)
+    auth.set_access_token(token, token_secret)
 
     api = tweepy.API(auth,
                     wait_on_rate_limit=True,
@@ -142,15 +142,10 @@ class pyChicken:
     """ Captures a still image and save it to a file for uplaoding to a tweet
     """
     
-    # We don't want to capture an image if the camera is flagged as disabled
-    if not self.use_camera:
-      logging.info("Camera disabled. Not going to capture image")
-      return False
     try:
       logging.info("Capturing image")
-      if self.camera_text:
-        self.camera.annotate_text = self.camera_text
-      self.camera.capture(self.twitter_image)
+      self.camera.capture(self.twitter_image, use_video_stream=True)
+      
       return True
 
     except Exception as e:
@@ -167,11 +162,11 @@ class pyChicken:
       media = self.twitter.media_upload(self.twitter_image)
       media_ids = list(media.media_id_string)
 
-      self.twitter_api.update_status(status=message, media_ids=media_ids)
+      self.twitter.update_status(status=message, media_ids=media_ids)
 
     else:
       logging.info("sending tweet without image")
-      self.twitter_api.update_status(status=message)
+      self.twitter.update_status(status=message)
 
   def _get_tweet_fact(self):
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
