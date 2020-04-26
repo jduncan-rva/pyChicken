@@ -309,7 +309,7 @@ class pyChicken:
                   target=self._run_retrieve_facts)
     motion_thread = threading.Thread(name='motion_sensor',
                   target=self._run_motion_sensor)
-    livestream_thread = threading.Thread(name=livestream,
+    livestream_thread = threading.Thread(name='livestream',
                   target=self._run_livestream)
 
     facts_thread.start()
