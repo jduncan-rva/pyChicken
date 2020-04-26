@@ -39,6 +39,13 @@ class pyChicken:
     send_tweets = config['twitter']['enabled']
     # check to see if we're going to be running livestreams
     send_livestream = config['livestream']['enabled']
+
+    if send_livestream:
+      self.running_livestream = False
+      self.youtube_key = config['livestream']['youtube_key']
+      self.youtube_url = config['livestream']['youtube_url']
+      self.youtube_feed_url = config['livestream']['youtube_feed_url']
+      self.livestream_duration = config['livestream']['duration']
     
     if use_facts:
       self.facts_url = config['facts']['facts_url']
@@ -50,10 +57,9 @@ class pyChicken:
 
     if use_camera:
       if config['camera']['text']:
-        camera_text = config['camera']['text']
+        self.camera_text = config['camera']['text']
       else:
-        camera_text = False
-      self._initialize_camera(camera_text=camera_text)
+        self.camera_text = False
 
     # If we're going to be sending out tweets we need to set up access through
     # the Twitter API
@@ -71,20 +77,36 @@ class pyChicken:
                      token_secret=access_token_secret,
                      use_camera=use_camera)
 
-    # We set this to false to start because it's checked by self._image_capture
-    # TODO - make this cleaner
-    self.running_livestream = False
     self.timestamp = self._set_timestamp()
 
-  def _initialize_camera(self, camera_text):
+  def _initialize_camera(self):
     """ Gets the camera set up and ready for use"""
 
-    logging.info("Initializing camera")
-    self.camera = PiCamera()
-    self.camera.resolution = (1024, 768)
-    if camera_text:
-      self.camera.annotate_text = camera_text
-    sleep(2)
+    try:
+      logging.info("Initializing camera")
+      self.camera = PiCamera()
+      self.camera.resolution = (1024, 768)
+      self.camera.framerate = 25
+      if self.camera_text:
+        self.camera.annotate_text = self.camera_text
+      sleep(2)
+
+      return True
+
+    except Exception as e:
+      logging.error("Unable to initalize camera", exc_info=True)
+      raise e
+
+  def _close_camera(self):
+    """ Cleanly closes down the camera interface. Apparently there are memory leaks and we can't leave it open forever"""
+
+    try:
+      logging.info("Closing camera interface")
+      self.camera.close()
+    
+    except Exception as e:
+      logging.error("Unable to close camera", exc_info=True)
+      raise e
 
   def _create_twitter_api(self, key, secret, token, token_secret, use_camera):
     """sets up and confirms the Twitter API is functional. Returns the twitter API object for use in other functions.
@@ -143,9 +165,10 @@ class pyChicken:
     """
     
     try:
+      self._initialize_camera()
       logging.info("Capturing image")
       self.camera.capture(self.twitter_image, use_video_port=True)
-      
+      self._close_camera()
       return True
 
     except Exception as e:
@@ -156,22 +179,34 @@ class pyChicken:
     """ Takes a still picture that was just taken and sends out a tweet with the picture and some pre-defined text
     """
 
-    message = self._get_tweet_fact()
-    if self._image_capture(): # This returns True if an image is captured
-      media_id = list()
-      logging.info("sending tweet with image")
-      media = self.twitter.media_upload(self.twitter_image)
-      logging.debug("uploading twitter media: %s", media.media_id_string)
-      media_id.append(media.media_id)
+    try:
+      # A live stream is running
+      if self.running_livestream:
+        message = "Hey! We're running a livestream right now! Come check us out at %s" % self.youtube_feed_url
 
-      update = self.twitter.update_status(status=message, media_ids=media_id)
+        update = self.twitter.update_status(status=message)
 
-    else:
-      logging.info("sending tweet without image")
-      update = self.twitter.update_status(status=message)
+      else: 
+        message = self._get_tweet_fact()
+        if self._image_capture(): # This returns True if an image is captured
+          media_id = list()
+          logging.info("sending tweet with image")
+          media = self.twitter.media_upload(self.twitter_image)
+          logging.debug("uploading twitter media: %s", media.media_id_string)
+          media_id.append(media.media_id)
 
-    logging.info("Updated Twitter status: %s", update.id)
-    return update.id
+          update = self.twitter.update_status(status=message, media_ids=media_id)
+
+        else:
+          logging.info("sending tweet without image")
+          update = self.twitter.update_status(status=message)
+
+      logging.info("Updated Twitter status: %s", update.id)
+      return update.id
+
+    except Exception as e:
+      logging.error("Unable to send Twitter update", exc_info=True)
+      raise e
 
   def _get_tweet_fact(self):
     """ Grabs a random fact about chickens to attach to a tweet that is being sent out
@@ -195,15 +230,31 @@ class pyChicken:
 
     return message
 
-  # def _run_livestream(self):
-  #   """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
-  #   """
+  def _send_livestream(self):
+    """ Starts a youtube live stream of the chicken yard and sends out a tweet to the youtube live link
+    """
 
-  #   self.running_livestream = True
+    try:
+      self.running_livestream = True
+      youtube_url = 'rtmp://a.rtmp.youtube.com/live2/'
+      stream_cmd = 'ffmpeg -f h264 -r 25 -i - -itsoffset 5.5 -fflags nobuffer -f alsa -ac 1 -i hw:1,0 -vcodec copy -acodec aac -ac 1 -ar 8000 -ab 32k -map 0:0 -map 1:0 -strict experimental -f flv %s%s' % (youtube_url, self.youtube_key)
 
-  #   # TODO
+      stream_pipe = subprocess.Popen(stream_cmd, shell=True, 
+              stdin=subprocess.PIPE)
 
-  #   self.running_livestream = False
+      self.camera.start_recording(stream_pipe.stdin, format='h264', bitrate = 2000000)
+      while True:
+        self.camera.wait_recording(self.livestream_duration)
+      
+    except KeyboardInterrupt: 
+      self.camera.stop_recording()
+
+    finally:
+      logging.info("Closing down livestream")
+      self._close_camera()
+      stream_pipe.stdin.close()
+      self.running_livestream = False
+
 
   def _load_facts_file(self):
     """ Takes a CSV fie in the format:
@@ -243,6 +294,13 @@ class pyChicken:
     sleep(3600)
     self.facts, self.facts_count = self._load_facts_file()  
 
+  def _run_livestream(self):
+    """The threaded livestream object"""
+
+    logging.info("Starting livestream thread")
+    sleep(30)
+    self._send_livestream()
+
   def run(self):
     """ The primary function. This is called by a script, loads a CSV file full of facts to use as social media content, and begins checking for the motion sensor, start livestreams, etc.
     """
@@ -251,6 +309,8 @@ class pyChicken:
                   target=self._run_retrieve_facts)
     motion_thread = threading.Thread(name='motion_sensor',
                   target=self._run_motion_sensor)
+    livestream_thread = threading.Thread(name=livestream,
+                  target=self._run_livestream)
 
     facts_thread.start()
     motion_thread.start()
