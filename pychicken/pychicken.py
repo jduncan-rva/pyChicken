@@ -236,6 +236,7 @@ class pyChicken:
 
     try:
       self.running_livestream = True
+      self._initialize_camera()
       youtube_url = 'rtmp://a.rtmp.youtube.com/live2/'
       stream_cmd = 'ffmpeg -f h264 -r 25 -i - -itsoffset 5.5 -fflags nobuffer -f alsa -ac 1 -i hw:1,0 -vcodec copy -acodec aac -ac 1 -ar 8000 -ab 32k -map 0:0 -map 1:0 -strict experimental -f flv %s%s' % (youtube_url, self.youtube_key)
 
