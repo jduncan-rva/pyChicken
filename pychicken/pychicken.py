@@ -158,12 +158,13 @@ class pyChicken:
 
     message = self._get_tweet_fact()
     if self._image_capture(): # This returns True if an image is captured
+      media_id = list()
       logging.info("sending tweet with image")
       media = self.twitter.media_upload(self.twitter_image)
       logging.info("uploading twitter media: %s", media.media_id_string)
-      media_ids = list(media.media_id)
+      media_id.append(media.media_id)
 
-      self.twitter.update_status(status=message, media_ids=media_ids)
+      self.twitter.update_status(status=message, media_ids=media_id)
 
       return update.id
 
