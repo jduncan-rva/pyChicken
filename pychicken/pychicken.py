@@ -21,7 +21,7 @@ class pyChicken:
 
     # Grab the config file and read in the options
     logging.basicConfig(filename='pychicken.log',
-                      level=logging.DEBUG,
+                      level=logging.INFO,
                       format='%(asctime)s %(name)s %(levelname)s: %(message)s',
                       datefmt='%m-%d %H:%M:%S')
     logging.debug("Processing __init__.py")
