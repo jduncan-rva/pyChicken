@@ -293,8 +293,9 @@ class pyChicken:
       address = ('', 8000)
       server = StreamingServer(address, StreamingHandler)
       server.serve_forever()
-      sleep(100)
+      sleep(30)
       logging.info("Closing livestream")
+      server.shutdown()
       self._close_camera()
       self.running_livestream = False
 
@@ -382,9 +383,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
           self.wfile.write(frame)
           self.wfile.write(b'\r\n')
       except Exception as e:
-        logging.warning(
-            'Removed streaming client %s: %s',
-            self.client_address, str(e))
+        logging.debug('Removed streaming client %s: %s', self.client_address, str(e))
     else:
       self.send_error(404)
       self.end_headers()
