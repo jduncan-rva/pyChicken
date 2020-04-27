@@ -317,6 +317,7 @@ class pyChicken:
     motion_thread.start()
     livestream_thread.start()
 
+
 class StreamingOutput(object):
   def __init__(self):
     self.frame = None
@@ -334,27 +335,28 @@ class StreamingOutput(object):
       self.buffer.seek(0)
     return self.buffer.write(buf)
 
+
 class StreamingHandler(server.BaseHTTPRequestHandler):
-  def __init__(self):
-    self.page = """\
-    < html >
-    <head >
-    <title > picamera MJPEG streaming demo < /title >
-    </head >
-    <body >
-    <h1 > PiCamera MJPEG Streaming Demo < /h1 >
-    <img src = "stream.mjpg" width = "640" height = "480" / >
-    </body >
-    </html >
+  def do_GET(self):
+
+    PAGE = """\
+    <html>
+    <head>
+    <title>picamera MJPEG streaming demo</title>
+    </head>
+    <body>
+    <h1>PiCamera MJPEG Streaming Demo</h1>
+    <img src="stream.mjpg" width="640" height="480" />
+    </body>
+    </html>
     """
 
-  def do_GET(self):
     if self.path == '/':
       self.send_response(301)
       self.send_header('Location', '/index.html')
       self.end_headers()
     elif self.path == '/index.html':
-      content = self.page.encode('utf-8')
+      content = PAGE.encode('utf-8')
       self.send_response(200)
       self.send_header('Content-Type', 'text/html')
       self.send_header('Content-Length', len(content))
@@ -366,7 +368,7 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
       self.send_header('Cache-Control', 'no-cache, private')
       self.send_header('Pragma', 'no-cache')
       self.send_header(
-      'Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
+          'Content-Type', 'multipart/x-mixed-replace; boundary=FRAME')
       self.end_headers()
       try:
         while True:
@@ -379,12 +381,14 @@ class StreamingHandler(server.BaseHTTPRequestHandler):
           self.end_headers()
           self.wfile.write(frame)
           self.wfile.write(b'\r\n')
-
       except Exception as e:
-        logging.warning('Removed streaming client %s: %s', self.client_address, str(e))
+        logging.warning(
+            'Removed streaming client %s: %s',
+            self.client_address, str(e))
     else:
       self.send_error(404)
       self.end_headers()
+
 
 class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
   allow_reuse_address = True
