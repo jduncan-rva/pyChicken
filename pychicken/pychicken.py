@@ -49,17 +49,6 @@ class pyChicken:
       self.livestream_duration = config['livestream']['duration']
       self.http_port = config['livestream']['http_port']
       self.ws_port = config['livestream']['ws_port']
-      self.page = """\
-        < html >
-        <head >
-        <title > picamera MJPEG streaming demo < /title >
-        </head >
-        <body >
-        <h1 > PiCamera MJPEG Streaming Demo < /h1 >
-        <img src = "stream.mjpg" width = "640" height = "480" / >
-        </body >
-        </html >
-        """
 
     if use_facts:
       self.facts_url = config['facts']['facts_url']
@@ -74,9 +63,9 @@ class pyChicken:
         self.camera_text = config['camera']['text']
         self.vflip = config['camera']['vflip']
         self.hflip = config['camera']['hflip']
-        self.width = config['camera']['width']
-        self.height = config['camera']['height']
-        self.framerate = config['camera']['framerate']
+        self.width = int(config['camera']['width'])
+        self.height = int(config['camera']['height'])
+        self.framerate = int(config['camera']['framerate'])
       else:
         self.camera_text = False
 
@@ -327,7 +316,6 @@ class pyChicken:
     facts_thread.start()
     motion_thread.start()
     livestream_thread.start()
-
 
 class StreamingOutput(object):
   def __init__(self):
